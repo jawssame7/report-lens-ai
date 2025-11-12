@@ -1,0 +1,241 @@
+.executive-summary {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.summary-header {
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+.summary-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+
+.summary-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 総合評価バッジ */
+.overall-status {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+}
+
+.status-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  min-width: 100px;
+  font-weight: 600;
+}
+
+.status-badge.healthy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.warning {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.status-badge.critical {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-summary {
+  flex: 1;
+}
+
+.status-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #334155;
+  margin: 0;
+}
+
+/* 主要指標サマリー */
+.key-metrics-summary h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 1rem 0;
+}
+
+.metrics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metric-summary-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.trend-up {
+  color: #16a34a;
+}
+
+.trend-down {
+  color: #dc2626;
+}
+
+.change-indicator {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+}
+
+.change-indicator.up {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.change-indicator.down {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.change-indicator.flat {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* アラート・注意事項 */
+.critical-alerts h3,
+.warnings h3,
+.positive-findings h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.critical-alerts h3 {
+  color: #dc2626;
+}
+
+.warnings h3 {
+  color: #ea580c;
+}
+
+.positive-findings h3 {
+  color: #0891b2;
+}
+
+.alert-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alert-item {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border-left: 4px solid;
+}
+
+.alert-item.critical {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.alert-item.warning {
+  background: #fff7ed;
+  border-color: #ea580c;
+}
+
+.alert-item.info {
+  background: #ecfeff;
+  border-color: #0891b2;
+}
+
+.alert-item strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
+}
+
+.alert-item p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .executive-summary {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .overall-status {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-badge {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .metrics-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+}

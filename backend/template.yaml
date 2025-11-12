@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ReportLens AI - Serverless Backend
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 1024
+    Runtime: nodejs20.x
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        NODE_ENV: production
+        GEMINI_API_KEY: !Ref GeminiApiKey
+        GEMINI_MODEL: !Ref GeminiModel
+        MAX_FILE_COUNT: !Ref MaxFileCount
+        MAX_TOTAL_BYTES: !Ref MaxTotalBytes
+        ALLOWED_ORIGINS: !Ref AllowedOrigins
+        HISTORY_TABLE_NAME: !Ref HistoryTable
+
+Parameters:
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+    Description: Gemini API Key for AI analysis
+
+  GeminiModel:
+    Type: String
+    Default: gemini-1.5-flash
+    Description: Gemini model to use
+
+  MaxFileCount:
+    Type: Number
+    Default: 10
+    Description: Maximum number of files per upload
+
+  MaxTotalBytes:
+    Type: Number
+    Default: 104857600
+    Description: Maximum total file size in bytes (default 100MB)
+
+  AllowedOrigins:
+    Type: String
+    Default: '*'
+    Description: Comma-separated list of allowed CORS origins
+
+Resources:
+  # DynamoDB Table for History
+  HistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-history
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: savedAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+        - AttributeName: savedAt
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # API Gateway
+  ReportLensApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: !Sub "'${AllowedOrigins}'"
+        MaxAge: "'600'"
+      BinaryMediaTypes:
+        - multipart/form-data
+        - application/octet-stream
+
+  # Lambda Function for Health Check
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/handlers/health.handler
+      Events:
+        HealthApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ReportLensApi
+            Path: /api/health
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/handlers/health.ts
+
+  # Lambda Function for History
+  HistoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/handlers/history.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref HistoryTable
+      Events:
+        HistoryApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ReportLensApi
+            Path: /api/history
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/handlers/history.ts
+
+  # Lambda Function for Analysis
+  AnalyzeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/handlers/analyze.handler
+      Timeout: 300
+      MemorySize: 2048
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref HistoryTable
+      Events:
+        AnalyzeApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ReportLensApi
+            Path: /api/analyze
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/handlers/analyze.ts
+        External:
+          - canvas
+          - pdf-parse
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ReportLensApi}.execute-api.${AWS::Region}.amazonaws.com/prod/
+
+  HistoryTableName:
+    Description: DynamoDB History Table Name
+    Value: !Ref HistoryTable
+
+  HealthFunctionArn:
+    Description: Health Check Lambda Function ARN
+    Value: !GetAtt HealthFunction.Arn
+
+  HistoryFunctionArn:
+    Description: History Lambda Function ARN
+    Value: !GetAtt HistoryFunction.Arn
+
+  AnalyzeFunctionArn:
+    Description: Analyze Lambda Function ARN
+    Value: !GetAtt AnalyzeFunction.Arn
